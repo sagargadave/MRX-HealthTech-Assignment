@@ -1,0 +1,25 @@
+.filters-card {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding: 16px 20px;
+}
+
+.search-field {
+  flex: 2;
+  min-width: 260px;
+}
+
+.gender-field {
+  flex: 1;
+  min-width: 160px;
+}
+
+.truncate-cell {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,16 @@
+.patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  min-width: 320px;
+}
+
+.error-banner {
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-top: 4px;
+}

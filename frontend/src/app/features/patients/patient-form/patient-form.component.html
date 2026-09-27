@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Patient' : 'Add Patient' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="patient-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Patient ID</mat-label>
+      <input matInput formControlName="patient_id" placeholder="e.g. P006" />
+      <mat-error *ngIf="form.controls.patient_id.hasError('required')">Patient ID is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" />
+      <mat-error *ngIf="form.controls.name.hasError('required')">Name is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Age</mat-label>
+      <input matInput type="number" formControlName="age" />
+      <mat-error *ngIf="form.controls.age.hasError('required')">Age is required.</mat-error>
+      <mat-error *ngIf="form.controls.age.hasError('min') || form.controls.age.hasError('max')"
+        >Age must be a valid number.</mat-error
+      >
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Gender</mat-label>
+      <mat-select formControlName="gender">
+        <mat-option value="Male">Male</mat-option>
+        <mat-option value="Female">Female</mat-option>
+        <mat-option value="Other">Other</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.gender.hasError('required')">Gender is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Medical History (optional)</mat-label>
+      <textarea matInput rows="3" formControlName="medical_history"></textarea>
+    </mat-form-field>
+
+    <div class="error-banner" *ngIf="serverErrors() as errs">
+      <div *ngFor="let key of Object.keys(errs)">{{ errs[key] }}</div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="submit()" [disabled]="saving()">
+    <mat-spinner *ngIf="saving()" diameter="18"></mat-spinner>
+    <span *ngIf="!saving()">Save</span>
+  </button>
+</mat-dialog-actions>
