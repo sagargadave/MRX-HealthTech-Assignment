@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Test Record' : 'Add Test Record' }}</h2>
+
+<mat-dialog-content>
+  <div class="loading-row" *ngIf="loadingLookups()">
+    <mat-spinner diameter="28"></mat-spinner>
+  </div>
+
+  <form [formGroup]="form" class="record-form" *ngIf="!loadingLookups()">
+    <div class="fixed-patient" *ngIf="fixedPatientLabel">
+      <span class="label">Patient</span>
+      <span class="value">{{ fixedPatientLabel }}</span>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width" *ngIf="!fixedPatientLabel">
+      <mat-label>Patient</mat-label>
+      <mat-select formControlName="patient_db_id">
+        <mat-option *ngFor="let p of patients()" [value]="p.id">{{ p.patient_id }} - {{ p.name }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.patient_db_id.hasError('required')">Patient is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Biomarker</mat-label>
+      <mat-select
+        formControlName="biomarker_id"
+        (selectionChange)="onBiomarkerSelected($event.value)"
+      >
+        <mat-option *ngFor="let b of biomarkers()" [value]="b.id">{{ b.name }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.biomarker_id.hasError('required')">Biomarker is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Result / Value</mat-label>
+      <input matInput type="number" step="0.01" formControlName="result_value" />
+      <mat-error *ngIf="form.controls.result_value.hasError('required')">Result is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Unit</mat-label>
+      <input matInput formControlName="unit" />
+      <mat-error *ngIf="form.controls.unit.hasError('required')">Unit is required.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date of Test</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="test_date" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="form.controls.test_date.hasError('required')">Test date is required.</mat-error>
+    </mat-form-field>
+
+    <div class="error-banner" *ngIf="serverErrors() as errs">
+      <div *ngFor="let key of Object.keys(errs)">{{ errs[key] }}</div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="submit()" [disabled]="saving() || loadingLookups()">
+    <mat-spinner *ngIf="saving()" diameter="18"></mat-spinner>
+    <span *ngIf="!saving()">Save</span>
+  </button>
+</mat-dialog-actions>

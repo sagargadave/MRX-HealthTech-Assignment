@@ -1,0 +1,37 @@
+.record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  min-width: 320px;
+}
+
+.fixed-patient {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.fixed-patient .label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.fixed-patient .value {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.error-banner {
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-top: 4px;
+}
