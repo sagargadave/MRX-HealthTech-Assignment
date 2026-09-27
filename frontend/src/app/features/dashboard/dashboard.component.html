@@ -1,0 +1,76 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+  </div>
+
+  <div class="loading-row" *ngIf="loadingStats()">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+
+  <div class="summary-grid" *ngIf="!loadingStats() && stats() as s">
+    <div class="summary-card">
+      <span class="label">Total Patients</span>
+      <span class="value">{{ s.totalPatients }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Total Test Records</span>
+      <span class="value">{{ s.totalTestRecords }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Total Biomarkers</span>
+      <span class="value">{{ s.totalBiomarkers }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Recent Tests (30 days)</span>
+      <span class="value">{{ s.recentTests }}</span>
+    </div>
+  </div>
+
+  <div class="app-card">
+    <h3>Recent Test Records</h3>
+
+    <div class="loading-row" *ngIf="loadingRecent()">
+      <mat-spinner diameter="28"></mat-spinner>
+    </div>
+
+    <div class="empty-state" *ngIf="!loadingRecent() && recentTests().length === 0">
+      <mat-icon>inbox</mat-icon>
+      <p>No recent tests available.</p>
+    </div>
+
+    <table mat-table [dataSource]="recentTests()" class="data-table" *ngIf="!loadingRecent() && recentTests().length > 0">
+      <ng-container matColumnDef="patientId">
+        <th mat-header-cell *matHeaderCellDef>Patient ID</th>
+        <td mat-cell *matCellDef="let row">{{ row.patientId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="patientName">
+        <th mat-header-cell *matHeaderCellDef>Patient Name</th>
+        <td mat-cell *matCellDef="let row">{{ row.patientName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="biomarker">
+        <th mat-header-cell *matHeaderCellDef>Biomarker</th>
+        <td mat-cell *matCellDef="let row">{{ row.biomarker }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="result">
+        <th mat-header-cell *matHeaderCellDef>Result</th>
+        <td mat-cell *matCellDef="let row">{{ row.result }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="unit">
+        <th mat-header-cell *matHeaderCellDef>Unit</th>
+        <td mat-cell *matCellDef="let row">{{ row.unit }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="testDate">
+        <th mat-header-cell *matHeaderCellDef>Test Date</th>
+        <td mat-cell *matCellDef="let row">{{ row.testDate | date: 'mediumDate' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="clickable-row" (click)="openPatient(row)"></tr>
+    </table>
+  </div>
+</div>
