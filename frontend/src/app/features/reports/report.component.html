@@ -1,0 +1,115 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Reports</h1>
+  </div>
+
+  <div class="app-card selector-card">
+    <mat-form-field appearance="outline" class="patient-select">
+      <mat-label>Select Patient</mat-label>
+      <mat-select [(ngModel)]="selectedPatientId" (selectionChange)="onPatientChange()" [disabled]="loadingPatients()">
+        <mat-option *ngFor="let p of patients()" [value]="p.id">{{ p.patient_id }} - {{ p.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <span class="spacer"></span>
+
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="downloadPdf()"
+      [disabled]="!report() || generatingPdf()"
+    >
+      <mat-spinner *ngIf="generatingPdf()" diameter="18"></mat-spinner>
+      <ng-container *ngIf="!generatingPdf()">
+        <mat-icon>download</mat-icon>
+        Download PDF
+      </ng-container>
+    </button>
+  </div>
+
+  <div class="empty-state" *ngIf="!selectedPatientId() && !loadingPatients()">
+    <mat-icon>description</mat-icon>
+    <p>Select a patient above to generate their report.</p>
+  </div>
+
+  <div class="loading-row" *ngIf="loadingReport()">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+
+  <div id="report-content" *ngIf="!loadingReport() && report() as r">
+    <div class="app-card info-card">
+      <h2>Patient Health Monitoring Report</h2>
+      <div class="info-grid">
+        <div>
+          <span class="info-label">Patient ID</span>
+          <span class="info-value">{{ r.patient.patientId }}</span>
+        </div>
+        <div>
+          <span class="info-label">Name</span>
+          <span class="info-value">{{ r.patient.name }}</span>
+        </div>
+        <div>
+          <span class="info-label">Age</span>
+          <span class="info-value">{{ r.patient.age }}</span>
+        </div>
+        <div>
+          <span class="info-label">Gender</span>
+          <span class="info-value">{{ r.patient.gender }}</span>
+        </div>
+        <div class="history-cell">
+          <span class="info-label">Medical History</span>
+          <span class="info-value">{{ r.patient.medicalHistory || 'None recorded.' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <h3>Test History</h3>
+      <div class="empty-state" *ngIf="r.testHistory.length === 0">
+        <mat-icon>science</mat-icon>
+        <p>No test records available for this patient.</p>
+      </div>
+      <table mat-table [dataSource]="r.testHistory" class="data-table" *ngIf="r.testHistory.length > 0">
+        <ng-container matColumnDef="biomarker">
+          <th mat-header-cell *matHeaderCellDef>Biomarker</th>
+          <td mat-cell *matCellDef="let row">{{ row.biomarker }}</td>
+        </ng-container>
+        <ng-container matColumnDef="result">
+          <th mat-header-cell *matHeaderCellDef>Result</th>
+          <td mat-cell *matCellDef="let row">{{ row.result }}</td>
+        </ng-container>
+        <ng-container matColumnDef="unit">
+          <th mat-header-cell *matHeaderCellDef>Unit</th>
+          <td mat-cell *matCellDef="let row">{{ row.unit }}</td>
+        </ng-container>
+        <ng-container matColumnDef="testDate">
+          <th mat-header-cell *matHeaderCellDef>Test Date</th>
+          <td mat-cell *matCellDef="let row">{{ row.testDate | date: 'mediumDate' }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+
+    <div class="app-card">
+      <div class="chart-header">
+        <h3>Trend</h3>
+        <mat-form-field appearance="outline" class="biomarker-select" *ngIf="availableBiomarkers().length > 0">
+          <mat-label>Select Biomarker</mat-label>
+          <mat-select [(ngModel)]="selectedBiomarkerId" (selectionChange)="onBiomarkerChange()">
+            <mat-option *ngFor="let b of availableBiomarkers()" [value]="b.id">{{ b.name }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="empty-state" *ngIf="availableBiomarkers().length === 0">
+        <mat-icon>show_chart</mat-icon>
+        <p>No trend data available for this biomarker.</p>
+      </div>
+
+      <div class="chart-wrapper" *ngIf="availableBiomarkers().length > 0">
+        <canvas baseChart [data]="chartData()" [options]="chartOptions" type="line"></canvas>
+      </div>
+    </div>
+  </div>
+</div>

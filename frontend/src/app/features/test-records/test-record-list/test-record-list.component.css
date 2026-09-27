@@ -1,0 +1,10 @@
+.patient-link {
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.patient-link:hover {
+  text-decoration: underline;
+}
