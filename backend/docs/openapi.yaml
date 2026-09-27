@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: Healthcare Monitoring Dashboard API
+  description: >
+    REST API for the Healthcare Monitoring Dashboard developer assessment
+    project. Uses only dummy/fictitious patient data. Not for clinical use.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string }
+        data: { type: object }
+    ErrorResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        message: { type: string }
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Log in as a doctor
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, example: doctor@example.com }
+                password: { type: string, example: Doctor@123 }
+      responses:
+        '200': { description: Login successful, content: { application/json: { schema: { $ref: '#/components/schemas/SuccessResponse' } } } }
+        '400': { description: Validation error }
+        '401': { description: Invalid credentials }
+  /auth/me:
+    get:
+      summary: Get the currently authenticated doctor
+      responses:
+        '200': { description: Current user }
+        '401': { description: Not authenticated }
+  /patients:
+    get:
+      summary: List patients (supports search & gender filter)
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Matches against patient_id or name
+        - in: query
+          name: gender
+          schema: { type: string, enum: [All, Male, Female, Other] }
+      responses:
+        '200': { description: List of patients }
+    post:
+      summary: Create a patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id, name, age, gender]
+              properties:
+                patient_id: { type: string, example: P006 }
+                name: { type: string, example: Mrs. New Patient }
+                age: { type: integer, example: 45 }
+                gender: { type: string, enum: [Male, Female, Other] }
+                medical_history: { type: string }
+      responses:
+        '201': { description: Patient created }
+        '400': { description: Validation error }
+        '409': { description: Patient ID already exists }
+  /patients/{id}:
+    get:
+      summary: Get a single patient by internal id
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Patient found }
+        '404': { description: Patient not found }
+    put:
+      summary: Update a patient
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Patient updated }
+        '404': { description: Patient not found }
+    delete:
+      summary: Delete a patient (cascades its test records)
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Patient deleted }
+        '404': { description: Patient not found }
+  /patients/{id}/biomarkers:
+    get:
+      summary: List biomarkers that have recorded results for this patient
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: List of biomarkers }
+  /patients/{id}/tests:
+    get:
+      summary: List all test records for this patient (newest first)
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: List of test records }
+    post:
+      summary: Add a test record for this patient
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [biomarker_id, result_value, unit, test_date]
+              properties:
+                biomarker_id: { type: integer }
+                result_value: { type: number }
+                unit: { type: string }
+                test_date: { type: string, format: date }
+      responses:
+        '201': { description: Test record created }
+        '400': { description: Validation error }
+        '404': { description: Patient not found }
+  /patients/{id}/trends/{biomarkerId}:
+    get:
+      summary: Get the trend (time series) of a biomarker for a patient
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer } }
+        - { in: path, name: biomarkerId, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Trend data }
+        '404': { description: Patient or biomarker not found }
+  /patients/{id}/report:
+    get:
+      summary: Get the full report payload for a patient (used to render the PDF)
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Report data }
+        '404': { description: Patient not found }
+  /biomarkers:
+    get:
+      summary: List all biomarkers
+      responses:
+        '200': { description: List of biomarkers }
+  /test-records:
+    get:
+      summary: List all test records across all patients (newest first)
+      responses:
+        '200': { description: List of test records }
+  /test-records/{id}:
+    put:
+      summary: Update a test record
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Test record updated }
+        '404': { description: Test record not found }
+    delete:
+      summary: Delete a test record
+      parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
+      responses:
+        '200': { description: Test record deleted }
+        '404': { description: Test record not found }
+  /dashboard/stats:
+    get:
+      summary: Get dashboard summary counts
+      responses:
+        '200': { description: Dashboard stats }
+  /dashboard/recent-tests:
+    get:
+      summary: Get most recent test records across all patients
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 10 }
+      responses:
+        '200': { description: Recent test records }
