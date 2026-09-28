@@ -2,6 +2,13 @@
 
 A full-stack web app for doctors to manage patients, record biomarker test results, view trends on a chart, and download a PDF report.
 
+## Project Overview
+
+**What it is :** A doctor-facing dashboard for tracking patients' lab-style test results (biomarkers such as Glucose, Cholesterol, Hemoglobin).
+
+**Problem it solves :** Test results kept in spreadsheets or on paper are hard to search, hard to compare over time, and slow to turn into a report. This app stores everything in a database, shows each biomarker's trend on a line chart, and generates a PDF report in one click.
+
+
 ## Features
 
 - Doctor registration and login (JWT + bcrypt)
@@ -20,14 +27,6 @@ A full-stack web app for doctors to manage patients, record biomarker test resul
 | Backend | Node.js, Express, TypeScript |
 | Database | MySQL (`mysql2`) |
 | Auth | JWT, bcrypt |
-
-## Architecture
-
-```
-Angular (localhost:4200)  →  REST API / Express (localhost:4000)  →  MySQL
-```
-
-The frontend never talks to the database directly.
 
 ## Project Structure
 
@@ -48,24 +47,39 @@ healthcare-monitoring-dashboard/
         ├── layout/      # sidebar + header
         └── shared/      # reusable components
 ```
-## Getting Started
+## Setup / Installation Instructions
 
-### 1. Clone
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 18 or higher (includes npm)
+- [MySQL](https://dev.mysql.com/downloads/) 8 or higher, installed and running
+- Git
+
+### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/sagargadave/MRX-HealthTech-Assignment
-cd healthcare-monitoring-dashboard
+git clone https://github.com/sagargadave/MRX-HealthTech-Assignment.git
+cd MRX-HealthTech-Assignment
 ```
 
-### 2. Backend
+### Step 2 — Backend setup
 
 ```bash
 cd backend
 npm install
-cp .env.example .env      # Windows: copy .env.example .env
 ```
 
-Edit `backend/.env` and set your MySQL password:
+Create your environment file from the template:
+
+```bash
+# macOS / Linux
+cp .env.example .env
+
+# Windows (Command Prompt)
+copy .env.example .env
+```
+
+Open `backend/.env` and fill in your values:
 
 ```
 DB_HOST=localhost
@@ -79,23 +93,38 @@ PORT=4000
 CLIENT_URL=http://localhost:4200
 ```
 
-Create the database, tables, sample data and demo doctor:
+| Variable | Meaning |
+|---|---|
+| `DB_HOST`, `DB_PORT` | Where MySQL is running |
+| `DB_USER`, `DB_PASSWORD` | Your MySQL login |
+| `DB_NAME` | Database name (created automatically by the seed script) |
+| `JWT_SECRET` | Secret used to sign login tokens — use a long random string |
+| `JWT_EXPIRES_IN` | How long a login stays valid |
+| `PORT` | Backend port |
+| `CLIENT_URL` | Frontend address allowed by CORS |
+
+Set up the database :
 
 ```bash
 npm run seed
 ```
 
-Start the API:
+Start the backend:
 
 ```bash
 npm run dev
 ```
 
-The API runs at `http://localhost:4000` and the docs at `http://localhost:4000/api-docs`.
+You should see:
 
-### 3. Frontend
+```
+[database] MySQL connection successful
+[server] Healthcare Monitoring Dashboard API listening on http://localhost:4000
+```
 
-In a second terminal:
+### Step 3 — Frontend setup
+
+Open a **second terminal**:
 
 ```bash
 cd frontend
@@ -103,16 +132,67 @@ npm install
 npm start
 ```
 
-Open `http://localhost:4200`.
+### Step 4 — Open the app
 
-## Demo Login
+Go to **http://localhost:4200**
+
+### Demo login
 
 ```
 Email:    doctor@example.com
 Password: Doctor@123
 ```
 
-You can also create your own account on the **Register** page.
+You can also create your own doctor account on the **Register** page (`/register`).
+
+### Useful commands
+
+| Folder | Command | Purpose |
+|---|---|---|
+| `backend` | `npm run seed` | Create database, tables, sample data, demo doctor |
+| `backend` | `npm run dev` | Start API with auto-reload |
+| `backend` | `npm run build` then `npm start` | Compile and run the API |
+| `frontend` | `npm start` | Start the Angular dev server |
+| `frontend` | `npm run build` | Production build |
+
+---
+
+## Database Setup
+
+**Database:** MySQL, database name `healthcare_monitoring`.
+
+### Option A — Automatic (recommended)
+
+Make sure MySQL is running and `backend/.env` has the right credentials, then run from the `backend` folder:
+
+```bash
+npm run seed
+```
+
+This one command:
+
+1. Runs `backend/database/schema.sql` — creates the database, all tables, foreign keys and indexes
+2. Runs `backend/database/seed.sql` — inserts dummy biomarkers, patients and test records
+3. Creates the demo doctor account with a **bcrypt-hashed** password
+
+> Run the seed **once** on a fresh database. Re-running it will not break the schema, but it will insert the sample test records again (duplicates).
+
+### Option B — Manual
+
+```bash
+mysql -u root -p < backend/database/schema.sql
+mysql -u root -p < backend/database/seed.sql
+```
+
+The demo doctor is created only by `npm run seed` (its password must be hashed with bcrypt), so use Option A, or create an account on the Register page.
+
+### Verify
+
+```sql
+USE healthcare_monitoring;
+SHOW TABLES;          -- users, patients, biomarkers, test_records
+SELECT * FROM patients;
+```
 
 ## API Overview
 
@@ -137,20 +217,28 @@ All endpoints are under `/api`. Everything except login and register needs `Auth
 
 Search and filter example: `GET /api/patients?search=P00&gender=Female`
 
-## Database
+## Screenshots
 
-Tables: `users`, `patients`, `biomarkers`, `test_records`.
+### Login
 
-- One patient → many test records
-- One biomarker → many test records
-- Deleting a patient also deletes their test records (`ON DELETE CASCADE`)
+![Login](screenshots/login.png)
 
-## Scripts
+### Dashboard
 
-| Location | Command | What it does |
-|---|---|---|
-| `backend` | `npm run seed` | Create tables + sample data + demo doctor |
-| `backend` | `npm run dev` | Start API with auto-reload |
-| `backend` | `npm run build` / `npm start` | Compile and run the API |
-| `frontend` | `npm start` | Start Angular dev server |
-| `frontend` | `npm run build` | Production build |
+![Dashboard](screenshots/dashboard.png)
+
+### Patient Management
+
+![Patients](screenshots/patients.png)
+
+### Patient Details & Biomarker Trends
+
+![Patient Details](screenshots/patient-details.png)
+
+### Test Records
+
+![Test Records](screenshots/test-records.png)
+
+### Medical Report
+
+![Medical Report](screenshots/report.png)
