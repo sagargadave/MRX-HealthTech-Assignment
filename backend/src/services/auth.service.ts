@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import pool from '../config/database';
-import { RowDataPacket } from 'mysql2';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export interface UserRecord extends RowDataPacket {
   id: number;
@@ -24,6 +24,17 @@ export async function findUserById(id: number): Promise<UserRecord | null> {
 
 export async function verifyPassword(plainPassword: string, hash: string): Promise<boolean> {
   return bcrypt.compare(plainPassword, hash);
+}
+
+export async function hashPassword(plain: string): Promise<string> {
+  return bcrypt.hash(plain, 10);
+}
+export async function createUser(input: { name: string; email: string; passwordHash: string; role: string }) {
+  const [result] = await pool.query<ResultSetHeader>(
+    'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+    [input.name, input.email, input.passwordHash, input.role]
+  );
+  return (await findUserById(result.insertId)) as UserRecord;
 }
 
 /** Returns a user object safe to send to the client (never includes password_hash). */

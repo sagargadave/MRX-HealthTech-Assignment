@@ -47,4 +47,10 @@ export class AuthService {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? (JSON.parse(raw) as User) : null;
   }
+
+  register(payload: { name: string; email: string; password: string }): Observable<ApiResponse<User>> {
+  return this.http.post<ApiResponse<User>>(`${API_BASE_URL}/auth/register`, payload);
+  
+  }
+
 }
